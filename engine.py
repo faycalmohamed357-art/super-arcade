@@ -1,4 +1,4 @@
-# engine.py - Moteur de jeu : Économie, Armée, Recherche et Guerre
+# engine.py - Moteur de jeu : Économie, Armée, Recherche, Guerre & Diplomatie
 
 import random
 import countries
@@ -12,18 +12,22 @@ class JoueurEmpire:
         self.niveau_qg = 1
         
         # Technologies
-        self.tech_militaires = 1  # Bonus de puissance de tir
-        self.tech_economie = 1    # Production de ressources
+        self.tech_militaires = 1
+        self.tech_economie = 1
         
         # Armée
         self.soldats = 100
         self.blindes = 10
         
-        # Territoires conquis
+        # Territoires & Diplomatie
         self.territoires_conquis = [pays]
-        
+        self.pactes_non_agression = []
+        self.alliance = None
+
     def afficher_statut(self):
-        puissance_militaire = (self.soldats * 10 + self.blindes * 50) * self.tech_militaires
+        bonus_alliance = 1.2 if self.alliance else 1.0
+        puissance_militaire = int(((self.soldats * 10 + self.blindes * 50) * self.tech_militaires) * bonus_alliance)
+        
         print(f"\n==========================================")
         print(f" 🏰 EMPIRE : {self.pays.upper()} (Souverain : {self.nom})")
         print(f"==========================================")
@@ -32,11 +36,12 @@ class JoueurEmpire:
         print(f"🧬 Tech Militaire : Niv. {self.tech_militaires} | Tech Économie : Niv. {self.tech_economie}")
         print(f"🎖️ Armée : {self.soldats} Soldats | 🪖 {self.blindes} Blindés")
         print(f"⚔️ Puissance de combat totale : {puissance_militaire} pts")
+        print(f"🤝 Alliance actuelle : {self.alliance if self.alliance else 'Aucune'}")
+        print(f"📜 Pactes signés : {', '.join(self.pactes_non_agression) if self.pactes_non_agression else 'Aucun'}")
         print(f"🗺️ Territoires contrôlés ({len(self.territoires_conquis)}) : {', '.join(self.territoires_conquis)}")
         print(f"==========================================")
 
     def recruter_armee(self, type_troupe, quantite):
-        """Recrute des soldats ou des véhicules blindés."""
         cout_unitaire_argent = 10 if type_troupe == "soldat" else 80
         cout_unitaire_petrole = 0 if type_troupe == "soldat" else 20
         
@@ -68,18 +73,47 @@ class JoueurEmpire:
         else:
             print(f"\n Fonds insuffisants ! Nécessaire : {cout} $")
 
+    def proposer_pacte(self, cible):
+        if cible in self.territoires_conquis:
+            print("\n Impossible de signer un pacte avec un territoire que vous contrôlez déjà !")
+            return
+        if cible in self.pactes_non_agression:
+            print(f"\n Un pacte de non-agression est déjà actif avec {cible}.")
+            return
+            
+        cout_pacte = 200
+        if self.argent >= cout_pacte:
+            self.argent -= cout_pacte
+            self.pactes_non_agression.append(cible)
+            print(f"\n 📜 Traité signé ! {cible} a accepté ton pacte de non-agression (-200 $).")
+        else:
+            print("\n Fonds insuffisants pour négocier un pacte (200 $ requis).")
+
+    def rejoindre_alliance(self, nom_alliance):
+        if self.alliance == nom_alliance:
+            print(f"\n Vous faites déjà partie de {nom_alliance} !")
+            return
+            
+        self.alliance = nom_alliance
+        print(f"\n 🤝 Félicitations ! Votre Empire a rejoint l'alliance '{nom_alliance}' !")
+        print(" 🔥 Bonus actif : +20% de puissance militaire globale !")
+
     def attaquer_pays(self, cible):
-        """Système de simulation de bataille et de conquête."""
         if cible in self.territoires_conquis:
             print(f"\n Ce territoire ({cible}) fait déjà partie de ton empire !")
+            return
+
+        if cible in self.pactes_non_agression:
+            print(f"\n Impossible d'attaquer {cible} ! Un pacte de non-agression est en cours.")
             return
 
         if self.soldats < 10:
             print("\n Armée insuffisante pour lancer une invasion ! Recrute au moins 10 soldats.")
             return
 
-        # Calcul des forces en présence
-        ma_puissance = (self.soldats * 10 + self.blindes * 50) * self.tech_militaires
+        bonus_alliance = 1.2 if self.alliance else 1.0
+        ma_puissance = int(((self.soldats * 10 + self.blindes * 50) * self.tech_militaires) * bonus_alliance)
+        
         defensifs_soldats = random.randint(30, 200)
         defensifs_blindes = random.randint(2, 25)
         puissance_ennemie = (defensifs_soldats * 10 + defensifs_blindes * 50)
@@ -87,7 +121,6 @@ class JoueurEmpire:
         print(f"\n⚔️ ---------------- BATAILLE DE {cible.upper()} ---------------- ⚔️")
         print(f" 🚀 Ta Puissance : {ma_puissance} pts vs 🛡️ Défense Ennemie : {puissance_ennemie} pts")
         
-        # Pertes au combat
         pertes_soldats = min(self.soldats, random.randint(5, 20))
         pertes_blindes = min(self.blindes, random.randint(0, 3))
         self.soldats -= pertes_soldats

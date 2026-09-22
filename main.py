@@ -1,4 +1,4 @@
-# main.py - Menu complet avec Recrutement & Conquête Militaire
+# main.py - Interface complète : Guerre, Recherche & Diplomatie
 
 import engine
 import countries
@@ -7,10 +7,11 @@ def afficher_menu_empire():
     print("\n--- 🌐 MENU CONQUÊTE & STRATÉGIE 🌐 ---")
     print("1. Voir le statut de l'Empire")
     print("2. Recruter des Troupes (Soldats / Blindés)")
-    print("3. Améliorer la Technologie Militaire (Armes)")
-    print("4. Améliorer la Technologie Économique (Revenus)")
-    print("5. ⚔️ Attaquer et Conquérir un Pays")
-    print("6. Quitter le jeu")
+    print("3. Améliorer la Technologie (Militaire / Économie)")
+    print("4. 🤝 Diplomatie : Signer un Pacte de Non-Agression")
+    print("5. 🛡️ Diplomatie : Rejoindre / Créer une Alliance")
+    print("6. ⚔️ Attaquer et Conquérir un Pays")
+    print("7. Quitter le jeu")
     print("---------------------------------------")
 
 def main():
@@ -34,7 +35,7 @@ def main():
 
     while True:
         afficher_menu_empire()
-        choix = input("Votre ordre, Majesté (1-6) : ").strip()
+        choix = input("Votre ordre, Majesté (1-7) : ").strip()
 
         if choix == "1":
             empire.afficher_statut()
@@ -52,17 +53,33 @@ def main():
             except ValueError:
                 print(" Nombre invalide !")
         elif choix == "3":
-            empire.ameliorer_technologie("militaire")
+            print("\n--- 🧬 ARBRE TECHNOLOGIQUE ---")
+            print("1. Technologie Militaire (Bonus de Dégâts)")
+            print("2. Technologie Économique (Bonus de Revenus)")
+            t_choice = input("Choix (1-2) : ").strip()
+            if t_choice == "1":
+                empire.ameliorer_technologie("militaire")
+            elif t_choice == "2":
+                empire.ameliorer_technologie("economie")
         elif choix == "4":
-            empire.ameliorer_technologie("economie")
+            saisie_cible = input("\n📜 Avec quel pays veux-tu signer un pacte de non-agression ? : ")
+            cible = countries.valider_pays(saisie_cible)
+            if cible:
+                empire.proposer_pacte(cible)
+            else:
+                print(" Pays introuvable !")
         elif choix == "5":
+            nom_all = input("\n🛡️ Entre le nom de l'Alliance à rejoindre/créer (ex: Pacte Asiatique) : ").strip()
+            if nom_all:
+                empire.rejoindre_alliance(nom_all)
+        elif choix == "6":
             saisie_cible = input("\n⚔️ Quel pays d'Afrique ou d'Asie veux-tu attaquer ? : ")
             cible = countries.valider_pays(saisie_cible)
             if cible:
                 empire.attaquer_pays(cible)
             else:
                 print(" Pays introuvable !")
-        elif choix == "6":
+        elif choix == "7":
             print(f"\nSauvegarde du royaume de {nom}... À bientôt ! 👋")
             break
         else:
