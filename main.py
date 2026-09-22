@@ -1,64 +1,72 @@
-# main.py - Version sécurisée
+# main.py - Menu complet avec Recrutement & Conquête Militaire
 
-import storage
-import games
+import engine
+import countries
 
-def afficher_menu():
-    print("\n==============================")
-    print("   🎮 SUPER ARCADE PRO 🎮")
-    print("==============================")
-    print("1. Jouer à la Devinette")
-    print("2. Voir le classement et statistiques")
-    print("3. Quitter")
-    print("==============================")
-
-def afficher_classement_et_stats():
-    print("\n--- 🏆 CLASSEMENT & STATISTIQUES 🏆 ---")
-    scores = storage.lire_scores()
-    
-    if not scores:
-        print("Aucun score enregistré pour le moment.")
-        return
-
-    # Utilisation d'un dictionnaire pour garder le meilleur score par joueur
-    meilleurs_scores = {}
-    total_points = 0
-    
-    for nom, score in scores:
-        total_points += score
-        if nom not in meilleurs_scores or score > meilleurs_scores[nom]:
-            meilleurs_scores[nom] = score
-
-    # Tri des meilleurs scores par joueur (du plus grand au plus petit)
-    classement = sorted(meilleurs_scores.items(), key=lambda x: x[1], reverse=True)
-    
-    print("\n Top Joueurs (Meilleurs Scores) :")
-    for rang, (nom, score) in enumerate(classement, start=1):
-        print(f" {rang}. {nom} : {score} pts")
-        
-    print(f"\n Total des parties jouées : {len(scores)}")
-    print(f" Moyenne des scores : {total_points / len(scores):.1f} pts")
+def afficher_menu_empire():
+    print("\n--- 🌐 MENU CONQUÊTE & STRATÉGIE 🌐 ---")
+    print("1. Voir le statut de l'Empire")
+    print("2. Recruter des Troupes (Soldats / Blindés)")
+    print("3. Améliorer la Technologie Militaire (Armes)")
+    print("4. Améliorer la Technologie Économique (Revenus)")
+    print("5. ⚔️ Attaquer et Conquérir un Pays")
+    print("6. Quitter le jeu")
+    print("---------------------------------------")
 
 def main():
-    nom_joueur = input("Entre ton pseudo : ").strip()
-    if not nom_joueur:
-        nom_joueur = "Joueur"
+    print("==========================================")
+    print("    ⚔️ EMPIRES OF AFRICA & ASIA ⚔️")
+    print("==========================================")
+    
+    nom = input("Entre ton nom de Souverain : ").strip()
+    if not nom:
+        nom = "Empereur"
+        
+    pays_valide = None
+    while not pays_valide:
+        saisie = input("\nChoisis ton pays de départ (ex: Chine, Niger, Inde...) : ")
+        pays_valide = countries.valider_pays(saisie)
+        if not pays_valide:
+            print(" Pays non trouvé en Afrique ou Asie !")
+
+    empire = engine.JoueurEmpire(nom, pays_valide)
+    print(f"\n Félicitations ! Tu prends le contrôle de : {pays_valide}")
 
     while True:
-        afficher_menu()
-        choix = input("Choisis une option (1-3) : ").strip()
+        afficher_menu_empire()
+        choix = input("Votre ordre, Majesté (1-6) : ").strip()
 
         if choix == "1":
-            score_obtenu = games.jouer_devinette()
-            if score_obtenu > 0:
-                storage.sauvegarder_score(nom_joueur, score_obtenu)
+            empire.afficher_statut()
         elif choix == "2":
-            afficher_classement_et_stats()
+            print("\n--- 🎖️ RECRUTEMENT ---")
+            print("1. Soldats (10 $ l'unité)")
+            print("2. Blindés (80 $ + 20 pétrole l'unité)")
+            type_t = input("Choix (1-2) : ").strip()
+            try:
+                qte = int(input("Quantité : "))
+                if type_t == "1":
+                    empire.recruter_armee("soldat", qte)
+                elif type_t == "2":
+                    empire.recruter_armee("blinde", qte)
+            except ValueError:
+                print(" Nombre invalide !")
         elif choix == "3":
-            print(f"\nAu revoir {nom_joueur} ! À bientôt sur Super Arcade Pro ! 👋")
+            empire.ameliorer_technologie("militaire")
+        elif choix == "4":
+            empire.ameliorer_technologie("economie")
+        elif choix == "5":
+            saisie_cible = input("\n⚔️ Quel pays d'Afrique ou d'Asie veux-tu attaquer ? : ")
+            cible = countries.valider_pays(saisie_cible)
+            if cible:
+                empire.attaquer_pays(cible)
+            else:
+                print(" Pays introuvable !")
+        elif choix == "6":
+            print(f"\nSauvegarde du royaume de {nom}... À bientôt ! 👋")
             break
         else:
-            print(" Choix invalide ! Veuillez saisir uniquement 1, 2 ou 3.")
+            print(" Ordre non reconnu !")
 
 if __name__ == "__main__":
     main()
