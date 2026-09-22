@@ -1,0 +1,18 @@
+# 1. Installation des dépendances système et buildozer
+!sudo apt-get update
+!sudo apt-get install -y build-essential libsqlite3-dev sqlite3 bzip2 libbz2-dev zlib1g-dev libssl-dev openssl libgdbm-dev libgdbm-compat-dev liblzma-dev libreadline-dev libffi-dev uuid-dev libncurses5-dev libncursesw5-dev xz-utils ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good
+!pip install --upgrade buildozer Cython
+
+# 2. Clonage du projet
+!git clone https://github.com/faycalmohamed357-art/super-arcade.git
+
+# 3. Création de l'utilisateur standard et ajustement des permissions
+!useradd -m -s /bin/bash usercolab
+!chown -R usercolab:usercolab /content/super-arcade
+
+# 4. Initialisation et configuration de buildozer.spec
+!su usercolab -c "cd /content/super-arcade && buildozer init"
+!su usercolab -c "cd /content/super-arcade && sed -i 's/requirements = python3,kivy/requirements = python3,kivy,filetype/g' buildozer.spec"
+
+# 5. Compilation de l'APK (avec acceptation automatique des licences Android)
+!su usercolab -c "cd /content/super-arcade && yes | buildozer -v android debug"
