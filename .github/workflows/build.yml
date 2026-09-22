@@ -27,7 +27,7 @@ jobs:
     - name: Install Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential ccache git libffi-dev libssl-dev libltdl-dev python3-setuptools
+        sudo apt-get install -y build-essential ccache git libffi-dev libssl-dev libltdl-dev python3-setuptools android-sdk
         pip install --upgrade pip
         pip install buildozer cython
 
@@ -37,12 +37,13 @@ jobs:
           buildozer init
         fi
         
-        # Accepter les licences SDK Android et fixer le NDK
-        sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
-        sed -i 's/# android.ndk = 25b/android.ndk = 25b/g' buildozer.spec
+        # Configuration stricte de buildozer.spec
+        sed -i 's/^#\?\s*android.accept_sdk_license\s*=.*/android.accept_sdk_license = True/' buildozer.spec
+        sed -i 's/^#\?\s*android.api\s*=.*/android.api = 33/' buildozer.spec
+        sed -i 's/^#\?\s*android.ndk\s*=.*/android.ndk = 25b/' buildozer.spec
         
-        # Accepter toutes les licences Android SDK en ligne de commande
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        # Acceptation automatique des licences Android SDK
+        yes | sdkmanager --licenses || true
         
         buildozer -v android debug
       env:
