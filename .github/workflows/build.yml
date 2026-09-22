@@ -36,6 +36,14 @@ jobs:
         if [ ! -f buildozer.spec ]; then
           buildozer init
         fi
+        
+        # Accepter les licences SDK Android et fixer le NDK
+        sed -i 's/# android.accept_sdk_license = False/android.accept_sdk_license = True/g' buildozer.spec
+        sed -i 's/# android.ndk = 25b/android.ndk = 25b/g' buildozer.spec
+        
+        # Accepter toutes les licences Android SDK en ligne de commande
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+        
         buildozer -v android debug
       env:
         NONINTERACTIVE: 1
