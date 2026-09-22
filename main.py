@@ -1,7 +1,8 @@
-# main.py - Interface complète : Guerre, Recherche & Diplomatie
+# main.py - Version complète avec Sauvegarde / Reprise JSON
 
 import engine
 import countries
+import storage
 
 def afficher_menu_empire():
     print("\n--- 🌐 MENU CONQUÊTE & STRATÉGIE 🌐 ---")
@@ -11,27 +12,38 @@ def afficher_menu_empire():
     print("4. 🤝 Diplomatie : Signer un Pacte de Non-Agression")
     print("5. 🛡️ Diplomatie : Rejoindre / Créer une Alliance")
     print("6. ⚔️ Attaquer et Conquérir un Pays")
-    print("7. Quitter le jeu")
+    print("7. 💾 Sauvegarder et Quitter")
     print("---------------------------------------")
 
 def main():
     print("==========================================")
     print("    ⚔️ EMPIRES OF AFRICA & ASIA ⚔️")
     print("==========================================")
-    
-    nom = input("Entre ton nom de Souverain : ").strip()
-    if not nom:
-        nom = "Empereur"
-        
-    pays_valide = None
-    while not pays_valide:
-        saisie = input("\nChoisis ton pays de départ (ex: Chine, Niger, Inde...) : ")
-        pays_valide = countries.valider_pays(saisie)
-        if not pays_valide:
-            print(" Pays non trouvé en Afrique ou Asie !")
 
-    empire = engine.JoueurEmpire(nom, pays_valide)
-    print(f"\n Félicitations ! Tu prends le contrôle de : {pays_valide}")
+    donnees_sauvegardees = storage.charger_partie()
+    empire = None
+
+    if donnees_sauvegardees:
+        print(f"\nUne partie sauvegardée a été trouvée pour : {donnees_sauvegardees['nom']} ({donnees_sauvegardees['pays']})")
+        reprise = input("Voulez-vous reprendre cette partie ? (o/n) : ").strip().lower()
+        if reprise == 'o':
+            empire = engine.JoueurEmpire.depuis_dictionnaire(donnees_sauvegardees)
+            print(f"\n Empire de {empire.pays} réarmé et prêt !")
+
+    if not empire:
+        nom = input("\nEntre ton nom de Souverain : ").strip()
+        if not nom:
+            nom = "Empereur"
+            
+        pays_valide = None
+        while not pays_valide:
+            saisie = input("Choisis ton pays de départ (ex: Chine, Niger, Inde...) : ")
+            pays_valide = countries.valider_pays(saisie)
+            if not pays_valide:
+                print(" Pays non trouvé en Afrique ou Asie !")
+
+        empire = engine.JoueurEmpire(nom, pays_valide)
+        print(f"\n Félicitations ! Tu prends le contrôle de : {pays_valide}")
 
     while True:
         afficher_menu_empire()
@@ -62,14 +74,14 @@ def main():
             elif t_choice == "2":
                 empire.ameliorer_technologie("economie")
         elif choix == "4":
-            saisie_cible = input("\n📜 Avec quel pays veux-tu signer un pacte de non-agression ? : ")
+            saisie_cible = input("\n📜 Avec quel pays veux-tu signer un pacte ? : ")
             cible = countries.valider_pays(saisie_cible)
             if cible:
                 empire.proposer_pacte(cible)
             else:
                 print(" Pays introuvable !")
         elif choix == "5":
-            nom_all = input("\n🛡️ Entre le nom de l'Alliance à rejoindre/créer (ex: Pacte Asiatique) : ").strip()
+            nom_all = input("\n🛡️ Entre le nom de l'Alliance : ").strip()
             if nom_all:
                 empire.rejoindre_alliance(nom_all)
         elif choix == "6":
@@ -80,7 +92,8 @@ def main():
             else:
                 print(" Pays introuvable !")
         elif choix == "7":
-            print(f"\nSauvegarde du royaume de {nom}... À bientôt ! 👋")
+            storage.sauvegarder_partie(empire)
+            print(f"\nSauvegarde terminée. À bientôt, Souverain {empire.nom} ! 👋")
             break
         else:
             print(" Ordre non reconnu !")

@@ -1,4 +1,4 @@
-# engine.py - Moteur de jeu : Économie, Armée, Recherche, Guerre & Diplomatie
+# engine.py - Moteur de jeu complet avec Sauvegarde JSON
 
 import random
 import countries
@@ -23,6 +23,22 @@ class JoueurEmpire:
         self.territoires_conquis = [pays]
         self.pactes_non_agression = []
         self.alliance = None
+
+    @classmethod
+    def depuis_dictionnaire(cls, d):
+        """Reconstruit un objet empire à partir des données sauvegardées."""
+        empire = cls(d["nom"], d["pays"])
+        empire.argent = d["argent"]
+        empire.petrole = d["petrole"]
+        empire.niveau_qg = d["niveau_qg"]
+        empire.tech_militaires = d["tech_militaires"]
+        empire.tech_economie = d["tech_economie"]
+        empire.soldats = d["soldats"]
+        empire.blindes = d["blindes"]
+        empire.territoires_conquis = d["territoires_conquis"]
+        empire.pactes_non_agression = d["pactes_non_agression"]
+        empire.alliance = d["alliance"]
+        return empire
 
     def afficher_statut(self):
         bonus_alliance = 1.2 if self.alliance else 1.0

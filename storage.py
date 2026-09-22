@@ -1,29 +1,37 @@
-# storage.py - Gestion de la sauvegarde des scores
+# storage.py - Sauvegarde et chargement de la partie en JSON
 
-FICHIER_SCORES = "scores_permanents.txt"
+import json
 
-def sauvegarder_score(nom, score):
-    """Enregistre le score d'un joueur dans le fichier texte."""
+FICHIER_SAUVEGARDE = "partie_empire.json"
+
+def sauvegarder_partie(empire):
+    """Convertit les données de l'objet empire en dictionnaire JSON."""
+    donnees = {
+        "nom": empire.nom,
+        "pays": empire.pays,
+        "argent": empire.argent,
+        "petrole": empire.petrole,
+        "niveau_qg": empire.niveau_qg,
+        "tech_militaires": empire.tech_militaires,
+        "tech_economie": empire.tech_economie,
+        "soldats": empire.soldats,
+        "blindes": empire.blindes,
+        "territoires_conquis": empire.territoires_conquis,
+        "pactes_non_agression": empire.pactes_non_agression,
+        "alliance": empire.alliance
+    }
     try:
-        with open(FICHIER_SCORES, "a", encoding="utf-8") as f:
-            f.write(f"{nom}:{score}\n")
-        print(f" Score de {nom} ({score} pts) sauvegardé avec succès !")
+        with open(FICHIER_SAUVEGARDE, "w", encoding="utf-8") as f:
+            json.dump(donnees, f, indent=4, ensure_ascii=False)
+        print("\n 💾 Partie sauvegardée avec succès dans partie_empire.json !")
     except IOError as e:
-        print(f" Erreur lors de la sauvegarde du score : {e}")
+        print(f"\n ⚠️ Erreur lors de la sauvegarde : {e}")
 
-def lire_scores():
-    """Lit et retourne la liste des scores enregistrés."""
-    scores = []
+def charger_partie():
+    """Lit le fichier JSON et renvoie un dictionnaire ou None."""
     try:
-        with open(FICHIER_SCORES, "r", encoding="utf-8") as f:
-            for ligne in f:
-                ligne = ligne.strip()
-                if ":" in ligne:
-                    nom, score_str = ligne.split(":", 1)
-                    scores.append((nom, int(score_str)))
-    except FileNotFoundError:
-        print(" Aucun fichier de score trouvé. Un nouveau sera créé au premier jeu.")
-    except Exception as e:
-        print(f" Erreur de lecture des scores : {e}")
-    return scores
+        with open(FICHIER_SAUVEGARDE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
 
